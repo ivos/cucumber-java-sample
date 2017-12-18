@@ -1,4 +1,4 @@
-package functional.steps;
+package ft.steps;
 
 import cucumber.api.java8.En;
 
