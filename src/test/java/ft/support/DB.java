@@ -148,13 +148,13 @@ public class DB {
 		executeUpdate(sql, null);
 	}
 
-	private static void executeUpdate(String sql, List<Object> parameters) {
+	private static void executeUpdate(String sql, Collection<String> parameters) {
 		verifyInitialized();
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			if (parameters != null) {
-				for (int index = 0; index < parameters.size(); index++) {
-					Object paramValue = parameters.get(index);
-					setParameter(statement, index + 1, paramValue);
+				int index = 1;
+				for (Object paramValue : parameters) {
+					setParameter(statement, index++, paramValue);
 				}
 			}
 			statement.executeUpdate();
@@ -194,7 +194,7 @@ public class DB {
 		return rows;
 	}
 
-	private static Object executeScalarQuery(String sql, Collection<String> columns) {
+	private static Object executeScalarQuery(String sql) {
 		verifyInitialized();
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			try (ResultSet rs = statement.executeQuery()) {
@@ -213,9 +213,18 @@ public class DB {
 		}
 	}
 
+	public static void insert(String table, List<Map<String, String>> data) {
+		for (Map<String, String> row : data) {
+			String sql = "insert into " + schema + "." + table
+					+ " (" + String.join(",", row.keySet()) + ")"
+					+ " values (" + String.join(",", Collections.nCopies(row.size(), "?")) + ")";
+			executeUpdate(sql, row.values());
+		}
+	}
+
 	private static Long selectCount(String table) {
 		String sql = "select count(*) from " + schema + "." + table;
-		return ((Number) executeScalarQuery(sql, Collections.emptyList())).longValue();
+		return ((Number) executeScalarQuery(sql)).longValue();
 	}
 
 	private static List<Map<String, String>> select(String table, Collection<String> columns) {
@@ -225,7 +234,7 @@ public class DB {
 
 	public static void awaitRowCount(String table, int count) {
 		int repeat = 0;
-		long actual = 0;
+		long actual;
 		try {
 			do {
 				if (repeat > 0) {
