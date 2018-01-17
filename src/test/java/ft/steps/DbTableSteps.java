@@ -3,9 +3,7 @@ package ft.steps;
 import cucumber.api.DataTable;
 import cucumber.api.java8.En;
 import ft.support.DB;
-
-import java.util.List;
-import java.util.Map;
+import ft.support.Data;
 
 public class DbTableSteps implements En {
 
@@ -24,9 +22,8 @@ public class DbTableSteps implements En {
 		});
 
 		Given("^customers:$", (DataTable dataTable) -> {
-			List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
 			DB.insert(TABLE,
-					DB.RowsBuilder.from(data)
+					DB.RowsBuilder.from(Data.asMaps(dataTable))
 							.with("name", "Default customer name")
 							.with("time_created", "2016-12-31T23:59:58.123Z")
 							.asDate("date_acquired")
@@ -38,8 +35,7 @@ public class DbTableSteps implements En {
 				(Integer count) -> DB.awaitRowCount(TABLE, count));
 
 		Then("^the customers are:$", (DataTable dataTable) -> {
-			List<Map<String, String>> expectedData = dataTable.asMaps(String.class, String.class);
-			DB.verify(TABLE, expectedData);
+			DB.verify(TABLE, Data.asMaps(dataTable));
 		});
 	}
 }

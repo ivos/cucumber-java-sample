@@ -1,7 +1,7 @@
 Feature: Database
   As a tester
-  In order to test system functionality
-  I want to control application's database
+  I want to setup and verify system's database content
+  In order to isolate tests and verify system functions work properly
 
   Scenario: Insert and verify table
     Given DB table customer
